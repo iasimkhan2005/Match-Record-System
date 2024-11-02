@@ -9,11 +9,13 @@ private:
 		Node* next;
 		Node* pre;
 	};
+	int count = 0;
 	typedef Node* ptr;
-	ptr head;
+	ptr head,tail;
 public:
 	DoublyList() {
 		head = NULL;
+		tail = NULL;
 	}
 	//---------------------------------------------------------------
 	void ADD_Runs_At_start(int score) {
@@ -25,12 +27,14 @@ public:
 			p->next = head;
 			p->pre = NULL;
 			head = p;
+			count++;
 			return;
 		}
 		p->score = score;
 		head->pre = p;
 		p->next = head;
 		head = p;
+		count++;
 	}
 	//---------------------------------------------------------------
 	void ADD_Runs_At_End(int score) {
@@ -43,6 +47,8 @@ public:
 			p->next = head;
 			p->pre = NULL;
 			head = p;
+			tail = p;
+			count++;
 			return;
 		}
 		for (p = head; p != 0 && p->next != nullptr; p = p->next)
@@ -51,45 +57,112 @@ public:
 		p->next = q;
 		q->pre = p;
 		q->score = score;
+		tail = q;
+		count++;
 	}
 	//---------------------------------------------------------------
 	bool checkDuplicate(int Value) {
 		ptr p = new Node();ptr before = new Node();ptr after = new Node();
 		bool con = false;
-		for (p = head; p != nullptr && p->score == Value; p = p->next)
-		{
-			con = true;
-			before = p->pre;
-			after = p->next;
-			before->next = after;
-			after->pre = before;
+		p = head;
+		while (p != nullptr) {
+			if (p->score == Value) {
+				if (p == head) {
+					//before = NULL;
+					head = p->next;
+					p = p->next;
+					con = true;
+					count--;
+					continue;
+				}
+				before = p->pre;
+				if (p->next == nullptr) {
+					before->next = nullptr;
+					tail = before;
+					con = true;
+					count--;
+					break;
+				}
+				after = p->next;
+				before->next = after;
+				after->pre = before;
+				con = true;
+				count--;
+			}
+			p = p->next;
 		}
 		if (con)
 			return true;
 		return false;
 	}
-
 	//---------------------------------------------------------------
-	void Display() {
+	void DisplayInSequence() {
 		ptr p = new Node();
-			cout << "========================================" << endl;
-			cout << "        Scores Record of Matches        " << endl;
+		p = head;
+			//cout << "========================================" << endl;
+			cout << "        Scores Record of Matches  (In Sequence)      " << endl;
 			int i = 1;
-		for (p = head; p != nullptr && p->next != nullptr; p = p->next) {
+			if (p == nullptr)
+			{
+				cout << "No Matches Record Yet!!" << endl;
+				system("Pause");
+			}
+		while (p != nullptr) {
 			cout << i << ".Match Score: " << p->score << endl;
 			i++;
+			p = p->next;
 		}
-		if (p->next == nullptr)
-		{
-			cout << i << ".Match Score: " << p->score << endl;
-		}
-		if (p == 0)
+		
+	}
+	//---------------------------------------------------------------
+	void DisplayINReverseOrder() {
+		ptr p = new Node();
+		p = tail;
+		//cout << "========================================" << endl;
+		cout << "        Scores Record of Matches  (In Reverse Order)      " << endl;
+		int i = count;
+		if (p == nullptr)
 		{
 			cout << "No Matches Record Yet!!" << endl;
 			system("Pause");
 		}
+		while (p != nullptr) {
+			cout << i << ".Match Score: " << p->score << endl;
+			i--;
+			p = p->pre;
+		}
 	}
+	//---------------------------------------------------------------
+	int HighestSCORE() {
+		ptr p = new Node(); p = head;
+		int Highest = 0;
+		if (p == nullptr) {
+			return 0;
+		}
+		if (count == 1) {
+			return 1;
+		}
+		while (p != nullptr) {
+			if (Highest < p->score) {
+				Highest = p->score;
+			}
+			p = p->next;
+		}
+		return Highest;
 
+ 	}
+	//---------------------------------------------------------------
+	int LowestSCORE() {
+		ptr p = new Node(); p = head;
+		int Lowest = p->score;
+		while (p != nullptr) {
+			if (Lowest >= p->score) {
+				Lowest = p->score;
+			}
+			p = p->next;
+		}
+		return Lowest;
+	}
 };
 int Input() {
 	int Value;
@@ -120,7 +193,9 @@ int main() {
 		cout << "1.Insert At Start." << endl;
 		cout << "2.Insert At End." << endl;
 		cout << "3.Delete All specific Record." << endl;
-		cout << "7.Display." << endl;
+		cout << "4.Display Scores In Sequence." << endl;
+		cout << "5.Display Score In Reverse Order." << endl;
+		cout << "6.Highest and Lowest Score in Record." << endl;
 		cout << "0.Exit." << endl;
 		cout << "Option: ";
 		cin >> option;
@@ -131,6 +206,8 @@ int main() {
 			int Score;
 			Score = Input();
 			Record.ADD_Runs_At_start(Score);
+			cout << "ADDED" << endl;
+			system("pause");
 		}
 		else if (option == '2')
 		{
@@ -139,6 +216,8 @@ int main() {
 			int Score;
 			Score = Input();
 			Record.ADD_Runs_At_End(Score);
+			cout << "ADDED" << endl;
+			system("pause");
 		}
 		else if (option == '3') {
 			int Score;
@@ -154,10 +233,37 @@ int main() {
 				system("pause");
 			}
 		}
-		else if (option == '7') {
+		else if (option == '4') {
 			system("cls");
 			outputScreen_Edits();
-			Record.Display();
+			Record.DisplayInSequence();
+			system("pause");
+		}
+		else if (option == '5') {
+			system("cls");
+			outputScreen_Edits();
+			Record.DisplayINReverseOrder();
+			system("pause");
+		}
+		else if (option == '6') {
+			system("cls");
+			outputScreen_Edits();
+			if (Record.HighestSCORE() == 0)
+			{
+				cout << "No Record Found!" << endl;
+				system("pause");
+				continue;
+			}
+			if (Record.HighestSCORE() == 1)
+			{
+				cout << "Only One Match Score Record Found , So there will be no Highest and Lowest in the Record." << endl;
+				system("pause");
+				continue;
+			}
+			int Highest = Record.HighestSCORE();
+			int Lowest = Record.LowestSCORE();
+			cout << "Highest Score IN Record is: " << Highest << endl;
+			cout << "Lowest Score IN Record is: " << Lowest << endl;
 			system("pause");
 		}
 		else if (option == '0') {
